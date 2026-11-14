@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +8,7 @@
 <title>IRONWALL — temporary email</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
-:root{color-scheme:dark;--bg:#080808;--panel:#0d0d0d;--panel2:#111;--line:#252525;--muted:#777;--text:#e8e8e8;--white:#fff;--green:#a7ff83;--red:#ff6868}
+:root{color-scheme:dark;--bg:#080808;--panel:#0d0d0d;--line:#252525;--muted:#777;--text:#e8e8e8;--green:#a7ff83;--red:#ff6868}
 *{box-sizing:border-box}
 html{min-height:100%;background:var(--bg)}
 body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -20%,#202020 0,transparent 55%),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),#080808;background-size:auto,34px 34px,34px 34px,auto;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px}
@@ -36,13 +37,11 @@ h1{font-size:clamp(24px,4vw,34px);letter-spacing:-1.5px;margin:0 0 9px;color:#ff
 .field-label{display:block;color:#777;font-size:10px;letter-spacing:1px;margin:0 0 9px;text-transform:uppercase}
 .address-box{display:flex;align-items:center;min-height:47px;border:1px solid #333;background:#080808;padding:0 11px;gap:7px}
 .address-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:#fff;font-size:12px}
-.address-at{color:#777}
 .btn{border:1px solid #393939;background:#171717;color:#ddd;padding:11px 13px;transition:.15s;font-size:11px}
 .btn:hover{border-color:#777;background:#222;color:#fff}
 .btn.primary{background:#e8e8e8;color:#080808;border-color:#e8e8e8;font-weight:700}
 .btn.primary:hover{background:#fff}
 .btn.small{padding:7px 10px;font-size:10px}
-.btn.full{width:100%}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .separator{height:1px;background:var(--line);margin:19px 0}
 .custom-row{display:flex;gap:7px}
@@ -86,8 +85,6 @@ h1{font-size:clamp(24px,4vw,34px);letter-spacing:-1.5px;margin:0 0 9px;color:#ff
 .footer{border-top:1px solid var(--line);margin-top:28px;padding-top:16px;display:flex;justify-content:space-between;color:#555;font-size:9px;letter-spacing:1px}
 .toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);background:#eee;color:#080808;padding:11px 16px;font-size:11px;z-index:20;opacity:0;pointer-events:none;transition:.2s}
 .toast.show{opacity:1;transform:translate(-50%,0)}
-.loading{animation:pulse 1s infinite alternate}
-@keyframes pulse{to{opacity:.35}}
 @media(max-width:800px){.layout{grid-template-columns:1fr}.shell{width:min(100% - 24px,600px);padding-top:16px}.topbar{margin-bottom:25px}.footer{gap:12px;flex-direction:column}.status{display:none}}
 @media(max-width:420px){.brand{font-size:14px;letter-spacing:2px}.top-right{gap:8px}.actions{grid-template-columns:1fr 1fr}.custom-row{flex-wrap:wrap}.custom-row .input{flex:1 1 100%}.suffix{border-left:1px solid #333;height:37px}.custom-row .btn{flex:1}}
 </style>
@@ -112,7 +109,7 @@ h1{font-size:clamp(24px,4vw,34px);letter-spacing:-1.5px;margin:0 0 9px;color:#ff
 <section class="panel">
 <div class="panel-head"><span data-i="address">YOUR ADDRESS</span><span>01 / 03</span></div>
 <div class="panel-body">
-<label class="field-label" data-i="activeAddress">ACTIVE ADDRESS</label>
+<label class="field-label" data-i="activeAddressLabel">ACTIVE ADDRESS</label>
 <div class="address-box"><span class="address-text" id="activeAddress">Not created</span></div>
 <div class="actions">
 <button class="btn" id="copyBtn" data-i="copy">COPY</button>
@@ -169,73 +166,317 @@ h1{font-size:clamp(24px,4vw,34px);letter-spacing:-1.5px;margin:0 0 9px;color:#ff
 <footer class="footer"><span>IRONWALL / PRIVATE MAIL SYSTEM</span><span>SESSION ENCRYPTION NOT PROVIDED</span><span id="clock"></span></footer>
 </div>
 <div class="toast" id="toast"></div>
+
 <script>
 const API="https://smail.lvlyvcbcla.workers.dev";
 const DOMAIN="ironwall.aclclouds.online";
 const $=id=>document.getElementById(id);
+
 const translations={
-en:{eyebrow:"PRIVATE MAIL SYSTEM / 001",title:"Temporary email",subtitle:"Anonymous inbox. No registration. No unnecessary data.",address:"YOUR ADDRESS",activeAddress:"ACTIVE ADDRESS",copy:"COPY",new:"NEW ADDRESS",custom:"CUSTOM ADDRESS",create:"CREATE",expiration:"DELETE MESSAGES AFTER",history:"ADDRESS HISTORY",inbox:"INBOX",auto:"AUTO",refresh:"REFRESH",emptyInbox:"INBOX IS EMPTY",emptyHint:"Your incoming messages will appear here.",message:"MESSAGE VIEWER",noMessage:"NO MESSAGE SELECTED",messageHint:"Select a message from your inbox to read it.",created:"Address created",copied:"Address copied",invalid:"Enter a valid address name",failed:"Request failed. Check Worker setup.",deleted:"Address removed",from:"FROM",to:"TO",received:"RECEIVED",delete:"DELETE MESSAGE",noAddress:"Create an address first",connecting:"CONNECTING",online:"WORKER ONLINE",offline:"WORKER OFFLINE",minutes:"minutes"},
-ru:{eyebrow:"ПРИВАТНАЯ ПОЧТОВАЯ СИСТЕМА / 001",title:"Временная почта",subtitle:"Анонимный почтовый ящик. Без регистрации и лишних данных.",address:"ВАШ АДРЕС",activeAddress:"АКТИВНЫЙ АДРЕС",copy:"КОПИРОВАТЬ",new:"НОВЫЙ АДРЕС",custom:"СВОЙ АДРЕС",create:"СОЗДАТЬ",expiration:"УДАЛЯТЬ ПИСЬМА ЧЕРЕЗ",history:"ИСТОРИЯ АДРЕСОВ",inbox:"ВХОДЯЩИЕ",auto:"АВТО",refresh:"ОБНОВИТЬ",emptyInbox:"ВХОДЯЩИХ НЕТ",emptyHint:"Новые письма будут отображаться здесь.",message:"ПРОСМОТР ПИСЬМА",noMessage:"ПИСЬМО НЕ ВЫБРАНО",messageHint:"Выбери письмо из списка, чтобы прочитать его.",created:"Адрес создан",copied:"Адрес скопирован",invalid:"Введи корректное имя адреса",failed:"Ошибка запроса. Проверь настройки Worker.",deleted:"Адрес удалён",from:"ОТ",to:"КОМУ",received:"ПОЛУЧЕНО",delete:"УДАЛИТЬ ПИСЬМО",noAddress:"Сначала создай адрес",connecting:"ПОДКЛЮЧЕНИЕ",online:"WORKER В СЕТИ",offline:"WORKER НЕ ДОСТУПЕН",minutes:"минут"}
+en:{eyebrow:"PRIVATE MAIL SYSTEM / 001",title:"Temporary email",subtitle:"Anonymous inbox. No registration. No unnecessary data.",address:"YOUR ADDRESS",activeAddressLabel:"ACTIVE ADDRESS",copy:"COPY",new:"NEW ADDRESS",custom:"CUSTOM ADDRESS",create:"CREATE",expiration:"DELETE MESSAGES AFTER",history:"ADDRESS HISTORY",inbox:"INBOX",auto:"AUTO",refresh:"REFRESH",emptyInbox:"INBOX IS EMPTY",emptyHint:"Your incoming messages will appear here.",message:"MESSAGE VIEWER",noMessage:"NO MESSAGE SELECTED",messageHint:"Select a message from your inbox to read it.",created:"Address created",copied:"Address copied",invalid:"Enter a valid address name",failed:"Request failed. Check Worker setup.",from:"FROM",to:"TO",received:"RECEIVED",delete:"DELETE MESSAGE",noAddress:"Create an address first",connecting:"CONNECTING",online:"WORKER ONLINE",offline:"WORKER OFFLINE"},
+ru:{eyebrow:"ПРИВАТНАЯ ПОЧТОВАЯ СИСТЕМА / 001",title:"Временная почта",subtitle:"Анонимный почтовый ящик. Без регистрации и лишних данных.",address:"ВАШ АДРЕС",activeAddressLabel:"АКТИВНЫЙ АДРЕС",copy:"КОПИРОВАТЬ",new:"НОВЫЙ АДРЕС",custom:"СВОЙ АДРЕС",create:"СОЗДАТЬ",expiration:"УДАЛЯТЬ ПИСЬМА ЧЕРЕЗ",history:"ИСТОРИЯ АДРЕСОВ",inbox:"ВХОДЯЩИЕ",auto:"АВТО",refresh:"ОБНОВИТЬ",emptyInbox:"ВХОДЯЩИХ НЕТ",emptyHint:"Новые письма будут отображаться здесь.",message:"ПРОСМОТР ПИСЬМА",noMessage:"ПИСЬМО НЕ ВЫБРАНО",messageHint:"Выбери письмо из списка, чтобы прочитать его.",created:"Адрес создан",copied:"Адрес скопирован",invalid:"Введи корректное имя адреса",failed:"Ошибка запроса. Проверь настройки Worker.",from:"ОТ",to:"КОМУ",received:"ПОЛУЧЕНО",delete:"УДАЛИТЬ ПИСЬМО",noAddress:"Сначала создай адрес",connecting:"ПОДКЛЮЧЕНИЕ",online:"WORKER В СЕТИ",offline:"WORKER НЕ ДОСТУПЕН"}
 };
+
 let lang=localStorage.getItem("iw_lang")||"en";
-let addresses=JSON.parse(localStorage.getItem("iw_addresses")||"[]");
+let addresses=[];
+try{
+addresses=JSON.parse(localStorage.getItem("iw_addresses")||"[]");
+if(!Array.isArray(addresses))addresses=[];
+}catch(e){
+addresses=[];
+}
 let active=localStorage.getItem("iw_active")||addresses[0]||"";
 let selected=null;
 let messages=[];
 let poller=null;
+
 const t=k=>translations[lang][k]||k;
-function toast(s){$("toast").textContent=s;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2200)}
-function save(){localStorage.setItem("iw_addresses",JSON.stringify(addresses));localStorage.setItem("iw_active",active)}
-function setLang(v){lang=v;localStorage.setItem("iw_lang",v);$("enBtn").classList.toggle("active",v==="en");$("ruBtn").classList.toggle("active",v==="ru");document.documentElement.lang=v;document.querySelectorAll("[data-i]").forEach(el=>el.textContent=t(el.dataset.i));renderHistory();renderInbox();if(selected)openMessage(selected)}
-async function request(path,options={}){const res=await fetch(API+path,{...options,headers:{"Content-Type":"application/json",...(options.headers||{})}});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.error||"Request failed");return data}
-function randomName(){return "iw"+Array.from(crypto.getRandomValues(new Uint8Array(7))).map(x=>x.toString(16).padStart(2,"0")).join("")}
-async function createAddress(name=randomName()){
-name=name.toLowerCase().trim();
-if(!/^[a-z0-9._-]{3,32}$/.test(name)){toast(t("invalid"));return}
-const address=name+"@"+DOMAIN;
-try{await request("/api/address",{method:"POST",body:JSON.stringify({address,ttl:Number($("expiration").value)})});if(!addresses.includes(address))addresses.unshift(address);active=address;selected=null;save();renderAll();await refresh();toast(t("created"))}catch(e){toast(t("failed"));console.error(e)}
+
+function toast(s){
+$("toast").textContent=s;
+$("toast").classList.add("show");
+setTimeout(()=>$("toast").classList.remove("show"),2200);
 }
-async function setActive(address){active=address;selected=null;save();renderAll();await refresh()}
+
+function save(){
+localStorage.setItem("iw_addresses",JSON.stringify(addresses));
+localStorage.setItem("iw_active",active);
+}
+
+function setLang(v){
+lang=v;
+localStorage.setItem("iw_lang",v);
+$("enBtn").classList.toggle("active",v==="en");
+$("ruBtn").classList.toggle("active",v==="ru");
+document.documentElement.lang=v;
+document.querySelectorAll("[data-i]").forEach(el=>el.textContent=t(el.dataset.i));
+renderHistory();
+renderInbox();
+if(selected)openMessage(selected);
+}
+
+async function request(path,options={}){
+const res=await fetch(API+path,{
+...options,
+headers:{"Content-Type":"application/json",...(options.headers||{})}
+});
+const data=await res.json().catch(()=>({}));
+if(!res.ok)throw new Error(data.error||"Request failed");
+return data;
+}
+
+function randomName(){
+return "iw"+Array.from(crypto.getRandomValues(new Uint8Array(7)))
+.map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+
+async function createAddress(name=randomName()){
+name=String(name).toLowerCase().trim();
+if(!/^[a-z0-9._-]{3,32}$/.test(name)){
+toast(t("invalid"));
+return;
+}
+const address=name+"@"+DOMAIN;
+try{
+await request("/api/address",{
+method:"POST",
+body:JSON.stringify({address,ttl:Number($("expiration").value)})
+});
+if(!addresses.includes(address))addresses.unshift(address);
+active=address;
+selected=null;
+save();
+renderAll();
+await refresh();
+toast(t("created"));
+}catch(e){
+toast(t("failed"));
+console.error(e);
+}
+}
+
+async function setActive(address){
+active=address;
+selected=null;
+save();
+renderAll();
+await refresh();
+}
+
 function renderHistory(){
 $("historyCount").textContent=addresses.length;
 $("history").innerHTML="";
-addresses.forEach(a=>{const row=document.createElement("div");row.className="history-item"+(a===active?" active":"");const name=document.createElement("span");name.className="history-address";name.textContent=a;name.onclick=()=>setActive(a);const del=document.createElement("button");del.className="remove";del.textContent="×";del.title="Remove";del.onclick=async()=>{if(a===active){active=addresses.find(x=>x!==a)||"";selected=null}addresses=addresses.filter(x=>x!==a);save();renderAll();if(active)refresh();try{await request("/api/address?address="+encodeURIComponent(a),{method:"DELETE"})}catch(e){} };row.append(name,del);$("history").append(row)})
+addresses.forEach(a=>{
+const row=document.createElement("div");
+row.className="history-item"+(a===active?" active":"");
+const name=document.createElement("span");
+name.className="history-address";
+name.textContent=a;
+name.onclick=()=>setActive(a);
+const del=document.createElement("button");
+del.className="remove";
+del.textContent="×";
+del.title="Remove";
+del.onclick=async()=>{
+if(a===active){
+active=addresses.find(x=>x!==a)||"";
+selected=null;
+messages=[];
 }
+addresses=addresses.filter(x=>x!==a);
+save();
+renderAll();
+if(active)refresh();
+try{
+await request("/api/address?address="+encodeURIComponent(a),{method:"DELETE"});
+}catch(e){}
+};
+row.append(name,del);
+$("history").append(row);
+});
+}
+
 function renderInbox(){
-const box=$("inboxList");$("mailCount").textContent=messages.length+"";
-if(!active){box.innerHTML='<div class="empty"><div class="empty-icon">[ ]</div><strong>'+t("noAddress")+'</strong></div>';return}
-if(!messages.length){box.innerHTML='<div class="empty"><div class="empty-icon">[ ]</div><strong>'+t("emptyInbox")+'</strong><span>'+t("emptyHint")+'</span></div>';return}
+const box=$("inboxList");
+$("mailCount").textContent=messages.length+"";
+if(!active){
+box.innerHTML='<div class="empty"><div class="empty-icon">[ ]</div><strong>'+t("noAddress")+'</strong></div>';
+return;
+}
+if(!messages.length){
+box.innerHTML='<div class="empty"><div class="empty-icon">[ ]</div><strong>'+t("emptyInbox")+'</strong><span>'+t("emptyHint")+'</span></div>';
+return;
+}
 box.innerHTML="";
-messages.forEach(m=>{const row=document.createElement("div");row.className="message-row"+(selected===m.id?" selected":"");const dot=document.createElement("span");dot.className="message-dot";const info=document.createElement("div");info.className="message-info";const from=document.createElement("div");from.className="message-from";from.textContent=m.sender||"Unknown sender";const subject=document.createElement("div");subject.className="message-subject";subject.textContent=m.subject||"(no subject)";info.append(from,subject);const date=document.createElement("span");date.className="message-date";date.textContent=new Date(m.received_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});row.append(dot,info,date);row.onclick=()=>openMessage(m.id);box.append(row)})
+messages.forEach(m=>{
+const row=document.createElement("div");
+row.className="message-row"+(selected===m.id?" selected":"");
+const dot=document.createElement("span");
+dot.className="message-dot";
+const info=document.createElement("div");
+info.className="message-info";
+const from=document.createElement("div");
+from.className="message-from";
+from.textContent=m.sender||"Unknown sender";
+const subject=document.createElement("div");
+subject.className="message-subject";
+subject.textContent=m.subject||"(no subject)";
+info.append(from,subject);
+const date=document.createElement("span");
+date.className="message-date";
+date.textContent=new Date(m.received_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+row.append(dot,info,date);
+row.onclick=()=>openMessage(m.id);
+box.append(row);
+});
 }
+
 async function refresh(){
-if(!active){messages=[];renderInbox();return}
+if(!active){
+messages=[];
+renderInbox();
+return;
+}
 $("connection").textContent=t("connecting");
-try{const data=await request("/api/inbox?address="+encodeURIComponent(active));messages=data.messages||[];$("connection").textContent=t("online");renderInbox();if(selected&&!messages.some(m=>m.id===selected)){selected=null;renderMessageEmpty()}}catch(e){$("connection").textContent=t("offline");console.error(e)}
+try{
+const data=await request("/api/inbox?address="+encodeURIComponent(active));
+messages=data.messages||[];
+$("connection").textContent=t("online");
+renderInbox();
+if(selected&&!messages.some(m=>m.id===selected)){
+selected=null;
+renderMessageEmpty();
 }
-function renderMessageEmpty(){$("messageView").innerHTML='<div class="empty"><div class="empty-icon">⌁</div><strong>'+t("noMessage")+'</strong><span>'+t("messageHint")+'</span></div>'}
+}catch(e){
+$("connection").textContent=t("offline");
+console.error(e);
+}
+}
+
+function renderMessageEmpty(){
+$("messageView").innerHTML='<div class="empty"><div class="empty-icon">⌁</div><strong>'+t("noMessage")+'</strong><span>'+t("messageHint")+'</span></div>';
+}
+
 async function openMessage(id){
-selected=id;renderInbox();
-try{const data=await request("/api/message?id="+encodeURIComponent(id));const m=data.message;if(!m){renderMessageEmpty();return}
-const box=document.createElement("div");box.className="message-content";
-const meta=document.createElement("div");meta.className="message-meta";meta.innerHTML="<div>"+t("from")+': <strong></strong></div><div>'+t("to")+': <strong></strong></div><div>'+t("received")+': <strong></strong></div>";meta.children[0].querySelector("strong").textContent=m.sender||"";meta.children[1].querySelector("strong").textContent=m.recipient||"";meta.children[2].querySelector("strong").textContent=new Date(m.received_at).toLocaleString();
-const subject=document.createElement("h2");subject.className="message-subject-large";subject.textContent=m.subject||"(no subject)";
-const body=document.createElement("div");body.className="message-body";body.textContent=m.body||m.raw||"";
-const actions=document.createElement("div");actions.className="message-actions";const del=document.createElement("button");del.className="btn small";del.textContent=t("delete");del.onclick=async()=>{try{await request("/api/message?id="+encodeURIComponent(id),{method:"DELETE"});messages=messages.filter(x=>x.id!==id);selected=null;renderInbox();renderMessageEmpty()}catch(e){toast(t("failed"))}};actions.append(del);box.append(meta,subject,body,actions);$("messageView").replaceChildren(box)
-}catch(e){toast(t("failed"))}
+selected=id;
+renderInbox();
+try{
+const data=await request("/api/message?id="+encodeURIComponent(id));
+const m=data.message;
+if(!m){
+renderMessageEmpty();
+return;
 }
-function renderAll(){$("activeAddress").textContent=active||"Not created";$("activeAddress").style.color=active?"#fff":"#777";renderHistory();renderInbox();if(!selected)renderMessageEmpty()}
+const box=document.createElement("div");
+box.className="message-content";
+const meta=document.createElement("div");
+meta.className="message-meta";
+meta.innerHTML='<div>'+t("from")+': <strong></strong></div><div>'+t("to")+': <strong></strong></div><div>'+t("received")+': <strong></strong></div>';
+meta.children[0].querySelector("strong").textContent=m.sender||"";
+meta.children[1].querySelector("strong").textContent=m.recipient||"";
+meta.children[2].querySelector("strong").textContent=new Date(m.received_at).toLocaleString();
+
+const subject=document.createElement("h2");
+subject.className="message-subject-large";
+subject.textContent=m.subject||"(no subject)";
+
+const body=document.createElement("div");
+body.className="message-body";
+body.textContent=m.body||m.raw||"";
+
+const actions=document.createElement("div");
+actions.className="message-actions";
+const del=document.createElement("button");
+del.className="btn small";
+del.textContent=t("delete");
+del.onclick=async()=>{
+try{
+await request("/api/message?id="+encodeURIComponent(id),{method:"DELETE"});
+messages=messages.filter(x=>x.id!==id);
+selected=null;
+renderInbox();
+renderMessageEmpty();
+}catch(e){
+toast(t("failed"));
+}
+};
+actions.append(del);
+box.append(meta,subject,body,actions);
+$("messageView").replaceChildren(box);
+}catch(e){
+toast(t("failed"));
+console.error(e);
+}
+}
+
+function renderAll(){
+$("activeAddress").textContent=active||"Not created";
+$("activeAddress").style.color=active?"#fff":"#777";
+renderHistory();
+renderInbox();
+if(!selected)renderMessageEmpty();
+}
+
 $("newBtn").onclick=()=>createAddress();
-$("createBtn").onclick=()=>{const n=$("customName").value;$("customName").value="";createAddress(n)};
-$("customName").addEventListener("keydown",e=>{if(e.key==="Enter")$("createBtn").click()});
-$("copyBtn").onclick=async()=>{if(!active){toast(t("noAddress"));return}try{await navigator.clipboard.writeText(active);toast(t("copied"))}catch(e){toast(active)}};
+
+$("createBtn").onclick=()=>{
+const n=$("customName").value;
+$("customName").value="";
+createAddress(n);
+};
+
+$("customName").addEventListener("keydown",e=>{
+if(e.key==="Enter")$("createBtn").click();
+});
+
+$("copyBtn").onclick=async()=>{
+if(!active){
+toast(t("noAddress"));
+return;
+}
+try{
+await navigator.clipboard.writeText(active);
+toast(t("copied"));
+}catch(e){
+toast(active);
+}
+};
+
 $("refreshBtn").onclick=refresh;
-$("expiration").onchange=async()=>{if(active){try{await request("/api/settings",{method:"POST",body:JSON.stringify({address:active,ttl:Number($("expiration").value)})})}catch(e){toast(t("failed"))}}};
-$("autoRefresh").onchange=()=>{if(poller)clearInterval(poller);if($("autoRefresh").checked)poller=setInterval(refresh,10000)};
-$("enBtn").onclick=()=>setLang("en");$("ruBtn").onclick=()=>setLang("ru");
+
+$("expiration").onchange=async()=>{
+if(active){
+try{
+await request("/api/settings",{
+method:"POST",
+body:JSON.stringify({address:active,ttl:Number($("expiration").value)})
+});
+}catch(e){
+toast(t("failed"));
+}
+}
+};
+
+$("autoRefresh").onchange=()=>{
+if(poller)clearInterval(poller);
+if($("autoRefresh").checked)poller=setInterval(refresh,10000);
+};
+
+$("enBtn").onclick=()=>setLang("en");
+$("ruBtn").onclick=()=>setLang("ru");
 $("clock").textContent=new Date().toISOString().slice(0,10);
-setLang(lang);renderAll();if(active)refresh();poller=setInterval(()=>{if($("autoRefresh").checked)refresh()},10000);
-request("/api/health").then(()=>$("connection").textContent=t("online")).catch(()=>$("connection").textContent=t("offline"));
+
+setLang(lang);
+renderAll();
+if(active)refresh();
+
+poller=setInterval(()=>{
+if($("autoRefresh").checked)refresh();
+},10000);
+
+request("/api/health")
+.then(()=>$("connection").textContent=t("online"))
+.catch(()=>$("connection").textContent=t("offline"));
 </script>
 </body>
 </html>
